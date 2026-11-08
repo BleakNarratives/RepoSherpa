@@ -33,7 +33,10 @@ fi
 cd "$TARGET"
 
 ACTUAL_REMOTE="$(git remote get-url origin 2>/dev/null || true)"
-[ "$ACTUAL_REMOTE" = "$REPO_URL" ] || fail "This folder's origin is '$ACTUAL_REMOTE', not the RepoSherpa repository. Nothing was changed."
+case "$ACTUAL_REMOTE" in
+  "$REPO_URL"|"https://github.com/BleakNarratives/RepoSherpa"|"git@github.com:BleakNarratives/RepoSherpa.git") ;;
+  *) fail "This folder's origin is '$ACTUAL_REMOTE', not the RepoSherpa repository. Nothing was changed." ;;
+esac
 
 if [ -n "$(git status --porcelain)" ]; then
   fail "Local changes or untracked files exist. They were preserved. Review/commit/stash them before syncing."
