@@ -82,3 +82,18 @@ To preview locally, serve the repository root over HTTP and open `/web/` (for ex
 4. Add an authenticated event bridge for coding-agent sessions.
 5. Add bounded operator actions and audit records.
 6. Integrate the established Scout/Spark Scout/Oracle governance format after its canonical implementation is identified.
+
+## Samsung Galaxy Tab A9 / Termux
+
+A safe one-shot checkout updater is provided at `tools/tablet_sync.sh`.
+
+From Termux, run it with Bash after downloading it from the repository:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/BleakNarratives/RepoSherpa/main/tools/tablet_sync.sh -o "$TMPDIR/reposherpa-tablet-sync.sh"
+bash "$TMPDIR/reposherpa-tablet-sync.sh"
+```
+
+The default destination is `$HOME/RepoSherpa`. An optional first argument selects another destination. The script clones the full repository when absent, otherwise fetches and fast-forwards `main`; it initializes declared submodules and verifies that local `HEAD` matches `origin/main`. It stops without discarding changes if the checkout is dirty, the origin is different, or a fast-forward is not possible. It does not install dependencies or start a background service.
+
+This syncs the tracked repository. It does not turn the current UI prototype into a live monitor: the execution bridge and runtime adapters remain future implementation work.
