@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BleakNarratives/RepoSherpa/blob/main/schemas/finding.schema.json",
+  "title": "RepoSherpa Finding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "severity", "confidence", "category", "evidence", "impact", "recommendation", "status"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "severity": {"enum": ["critical", "high", "medium", "low", "informational"]},
+    "confidence": {"enum": ["confirmed", "high", "medium", "low", "unknown"]},
+    "category": {"type": "string"},
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "reference", "observation"],
+        "properties": {
+          "source": {"type": "string"},
+          "reference": {"type": "string"},
+          "observation": {"type": "string"},
+          "commit": {"type": ["string", "null"]},
+          "observed_at": {"type": ["string", "null"], "format": "date-time"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "impact": {"type": "string"},
+    "recommendation": {"type": "string"},
+    "verification": {"type": ["string", "null"]},
+    "status": {"enum": ["open", "accepted", "in_progress", "fixed_unverified", "verified", "wont_fix"]},
+    "owner_decision": {"type": ["string", "null"]}
+  }
+}
