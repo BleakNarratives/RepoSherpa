@@ -1,0 +1,62 @@
+{
+  "contract_id": "reposherpa.core",
+  "contract_version": "0.1.0",
+  "status": "bootstrap",
+  "purpose": "Supervise repository work with evidence-based review, risk detection, bounded implementation, and an auditable trail.",
+  "scope": {
+    "targets": ["git_repository", "pull_request", "coding_agent_session", "ci_run", "runtime_probe"],
+    "first_target": "BleakNarratives/passive_income_swarm",
+    "portable": true
+  },
+  "roles": {
+    "scout": "Collect observations and evidence; do not independently approve policy or governed-document progression.",
+    "spark_scout": "Normalize and transport Scout evidence to the established adjudication process.",
+    "oracle": "Adjudicate evidence, policy decisions, and governed-document progression using the ecosystem's canonical implementation."
+  },
+  "modes": {
+    "observer": {"writes": false, "purpose": "Read-only reconnaissance and event capture."},
+    "advisor": {"writes": false, "purpose": "Explain findings and propose remediations."},
+    "operator": {"writes": "authorized_scope_only", "purpose": "Implement bounded changes on an isolated working branch."},
+    "guardian": {"writes": "explicitly_authorized_only", "purpose": "Escalate or block high-risk actions; never silently override the owner."}
+  },
+  "evidence_rules": [
+    "Every finding must include evidence references and a confidence level.",
+    "Separate observed facts, inferred risks, and unverified claims.",
+    "Never claim a command, test, build, probe, or deployment ran unless execution evidence exists.",
+    "A declared capability is not proof of a connected provider.",
+    "A reachable endpoint is not proof of correct authorization or end-to-end behavior.",
+    "A passing test suite is not proof of production readiness."
+  ],
+  "finding_fields": ["id", "title", "severity", "confidence", "category", "evidence", "impact", "recommendation", "verification", "status"],
+  "severity": ["critical", "high", "medium", "low", "informational"],
+  "confidence": ["confirmed", "high", "medium", "low", "unknown"],
+  "authorization": {
+    "default": "read_only",
+    "allowed_without_extra_approval": ["read_repository", "inspect_git_state", "read_ci_results", "run_non_destructive_local_checks"],
+    "requires_task_specific_approval": ["delete_data", "rewrite_history", "force_push", "rotate_credentials", "move_funds", "create_or_modify_payment", "deploy_to_production", "change_access_controls", "modify_live_services"]
+  },
+  "security": {
+    "never_log_secrets": true,
+    "redact_credentials_in_reports": true,
+    "treat_publicly_committed_credentials_as_compromised": true,
+    "do_not_echo_secret_values": true
+  },
+  "audit": {
+    "record_observation_source": true,
+    "record_repository_and_commit": true,
+    "record_tool_and_action": true,
+    "record_authorization_basis": true,
+    "record_result_and_rollback": true
+  },
+  "governance": {
+    "documentation_model": "adopt_existing_scout_oracle_system",
+    "canonical_format": "unverified_pending_repository_discovery",
+    "rule": "Do not introduce a competing SkillMD or SKILL.md governance convention. Scouts collect evidence; Oracle adjudicates governed changes."
+  },
+  "non_goals": [
+    "Pretending to monitor sessions without an active event bridge.",
+    "Claiming access to a user's device or runtime when only GitHub is available.",
+    "Treating agent-generated summaries as verified evidence.",
+    "Guaranteeing customers, revenue, or production reliability."
+  ]
+}
