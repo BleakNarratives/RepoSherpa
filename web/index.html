@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111318">
+<title>RepoSherpa · Command Console</title>
+<style>
+:root{color-scheme:dark;--bg:#111318;--panel:#191d25;--line:#303744;--text:#edf1f7;--muted:#9aa5b5;--accent:#9bd1c2;--focus:#d8eee8}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;display:grid;place-items:center;padding:20px}
+main{width:min(760px,100%)}.eyebrow{color:var(--accent);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}h1{font-size:clamp(1.8rem,5vw,3rem);margin:.3rem 0}.sub{color:var(--muted);margin:0 0 28px}
+.composer{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:0 18px 60px #0005}
+.row{display:flex;gap:10px;align-items:center}input{width:100%;min-width:0;background:transparent;color:var(--text);border:0;outline:0;padding:13px 10px;font:inherit}input::placeholder{color:#788393}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);border-radius:10px;background:#252c36;color:var(--text);padding:10px 14px}button:focus-visible,[role=option]:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.send{background:var(--accent);color:#101a18;border-color:transparent;font-weight:700}
+.suggestions{position:absolute;z-index:3;left:12px;right:12px;top:calc(100% + 8px);max-height:min(360px,55vh);overflow:auto;background:#202630;border:1px solid #3a4554;border-radius:12px;padding:6px;box-shadow:0 18px 50px #0009}
+.suggestions[hidden]{display:none}.option{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:0;background:transparent;padding:10px;border-radius:8px}.option[aria-selected=true],.option:hover{background:#303a47}.cmd{min-width:112px;color:var(--accent);font-weight:700;font-family:ui-monospace,SFMono-Regular,monospace}.desc{color:#c1cad6;font-size:.9rem}.hint{color:var(--muted);font-size:.78rem;margin:12px 4px 2px}.output{margin-top:18px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;color:var(--muted);min-height:58px;overflow-wrap:anywhere}.output strong{color:var(--text)}.tag{display:inline-block;color:var(--accent);font-size:.75rem;border:1px solid #3c665c;border-radius:99px;padding:2px 8px;margin-left:8px}
+@media(max-width:520px){body{padding:14px}.option{align-items:flex-start;gap:8px}.cmd{min-width:92px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Repository chaperone · interface prototype</div>
+  <h1>RepoSherpa</h1>
+  <p class="sub">Type <code>/</code> to call a command. Start typing to filter. This prototype demonstrates command discovery; it is not connected to a repository or execution bridge.</p>
+  <section class="composer" aria-label="RepoSherpa command input">
+    <form id="command-form" autocomplete="off">
+      <div class="row">
+        <input id="prompt" type="text" aria-label="Message or slash command" placeholder="Ask RepoSherpa… or type /" spellcheck="false">
+        <button class="send" type="submit">Submit</button>
+      </div>
+    </form>
+    <div id="suggestions" class="suggestions" role="listbox" aria-label="Slash commands" hidden></div>
+  </section>
+  <div id="output" class="output" aria-live="polite"><strong>Ready.</strong> Try <code>/</code>, then type <code>rev</code> or <code>risk</code>.</div>
+  <p class="hint">Keyboard: ↑ ↓ navigate · Enter select · Esc close · Tab complete. Unknown slash text is preserved.</p>
+</main>
+<script>
+(() => {
+  const input = document.querySelector("#prompt");
+  const list = document.querySelector("#suggestions");
+  const form = document.querySelector("#command-form");
+  const output = document.querySelector("#output");
+  let commands = [];
+  let active = 0;
+  let visible = false;
+
+  const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+
+  async function loadCommands() {
+    try {
+      const response = await fetch("../interface/slash-commands.json");
+      if (!response.ok) throw new Error("registry unavailable");
+      const registry = await response.json();
+      commands = registry.commands || [];
+    } catch {
+      commands = [];
+      output.innerHTML = "<strong>Command registry unavailable.</strong> Serve the repository over HTTP so the registry can be loaded.";
+    }
+  }
+
+  function queryInfo() {
+    const before = input.value.slice(0, input.selectionStart);
+    const match = before.match(/(?:^|\s)\/([^\s]*)$/);
+    return match ? { term: match[1].toLowerCase(), start: before.lastIndexOf("/") } : null;
+  }
+
+  function matches(term) {
+    return commands.filter(command => {
+      const names = [command.name, ...(command.aliases || [])];
+      return names.some(name => name.toLowerCase().startsWith(term)) ||
+        command.description.toLowerCase().includes(term);
+    });
+  }
+
+  function render() {
+    const info = queryInfo();
+    if (!info || !commands.length) return close();
+    const found = matches(info.term);
+    if (!found.length) return close();
+    active = Math.min(active, found.length - 1);
+    list.innerHTML = found.map((command, index) =>
+      '<button class="option" type="button" role="option" aria-selected="' + (index === active) + '" data-index="' + index + '">' +
+      '<span class="cmd">/' + escapeHtml(command.name) + '</span>' +
+      '<span class="desc">' + escapeHtml(command.description) + '</span></button>'
+    ).join("") + '<div class="hint">Choose a command to insert it. Submit only when your command and arguments are ready.</div>';
+    list.hidden = false;
+    visible = true;
+    list.querySelectorAll(".option").forEach(button => {
+      button.addEventListener("mousedown", event => event.preventDefault());
+      button.addEventListener("click", () => choose(found[Number(button.dataset.index)]));
+    });
+  }
+
+  function close() { list.hidden = true; visible = false; }
+  function choose(command) {
+    const info = queryInfo();
+    if (!info) return;
+    const before = input.value.slice(0, info.start);
+    const after = input.value.slice(input.selectionStart);
+    const insertion = "/" + command.name + " ";
+    input.value = before + insertion + after;
+    const caret = (before + insertion).length;
+    input.focus();
+    input.setSelectionRange(caret, caret);
+    close();
+  }
+
+  input.addEventListener("input", () => { active = 0; render(); });
+  input.addEventListener("click", render);
+  input.addEventListener("keydown", event => {
+    if (!visible) return;
+    const options = list.querySelectorAll(".option");
+    if (event.key === "ArrowDown") { event.preventDefault(); active = (active + 1) % options.length; render(); }
+    else if (event.key === "ArrowUp") { event.preventDefault(); active = (active - 1 + options.length) % options.length; render(); }
+    else if (event.key === "Escape") { event.preventDefault(); close(); }
+    else if (event.key === "Tab" || event.key === "Enter") {
+      const selected = options[active];
+      if (selected) { event.preventDefault(); selected.click(); }
+    }
+  });
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    close();
+    const value = input.value.trim();
+    if (!value) return;
+    const detail = { input: value, preparedAt: new Date().toISOString(), execution: "not_connected" };
+    window.dispatchEvent(new CustomEvent("reposherpa:command", { detail }));
+    output.innerHTML = "<strong>Command prepared.</strong><span class='tag'>NO EXECUTION BRIDGE</span><br><code>" + escapeHtml(value) + "</code><br>Input captured by the prototype; no repository action was performed.";
+  });
+
+  loadCommands();
+})();
+</script>
+</body>
+</html>
