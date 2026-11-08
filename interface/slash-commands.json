@@ -1,0 +1,26 @@
+{
+  "registry_version": "0.1.0",
+  "input_behavior": {
+    "trigger": "/",
+    "suggest_after_characters": 1,
+    "filter": "case_insensitive_prefix_and_alias",
+    "keyboard": ["ArrowUp", "ArrowDown", "Enter", "Escape", "Tab"],
+    "touch": true,
+    "show_description": true,
+    "show_argument_hint": true,
+    "unknown_command": "preserve_as_plain_text_and_offer_help",
+    "execution": "selection_prepares_command; user_submit_executes",
+    "destructive_actions": "require_confirmation_and_authorization"
+  },
+  "commands": [
+    {"name": "status", "aliases": ["s", "state"], "description": "Show repository, branch, session, and monitor status.", "args": [], "mode": "read"},
+    {"name": "scan", "aliases": ["audit", "inspect"], "description": "Run a scoped repository reconnaissance and risk scan.", "args": [{"name": "scope", "optional": true}], "mode": "read"},
+    {"name": "diff", "aliases": ["changes"], "description": "Explain the current working diff or selected commit range.", "args": [{"name": "base", "optional": true}], "mode": "read"},
+    {"name": "review", "aliases": ["pr", "check"], "description": "Review a change set for correctness, security, and maintainability.", "args": [{"name": "target", "optional": true}], "mode": "read"},
+    {"name": "risk", "aliases": ["threats"], "description": "Show prioritized risks with evidence and confidence.", "args": [{"name": "area", "optional": true}], "mode": "read"},
+    {"name": "tests", "aliases": ["verify"], "description": "Inspect available checks or run an explicitly scoped non-destructive test command.", "args": [{"name": "target", "optional": true}], "mode": "read_or_check"},
+    {"name": "watch", "aliases": ["follow"], "description": "Attach to an available event stream; report clearly if no live bridge exists.", "args": [{"name": "source", "optional": true}], "mode": "session"},
+    {"name": "explain", "aliases": ["why"], "description": "Explain a finding, code path, decision, or proposed change.", "args": [{"name": "finding_or_path", "optional": false}], "mode": "read"},
+    {"name": "help", "aliases": ["?"], "description": "List commands and usage examples.", "args": [{"name": "command", "optional": true}], "mode": "read"}
+  ]
+}
