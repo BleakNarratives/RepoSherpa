@@ -66,3 +66,19 @@ Supervise `passive_income_swarm` as a real project: verify the uncommitted capab
 ## License
 
 To be selected by the repository owner before public reuse or distribution.
+
+
+## Prototype
+
+The slash-command input prototype is at [web/index.html](web/index.html). It loads the command registry from `interface/slash-commands.json` and demonstrates filtering, keyboard/touch selection, and command insertion. It intentionally has no execution backend yet.
+
+To preview locally, serve the repository root over HTTP and open `/web/` (for example, with any static file server). Opening the HTML directly as a `file://` URL may prevent the browser from loading the JSON registry.
+
+## Initial build sequence
+
+1. Lock down the evidence and finding contract.
+2. Connect GitHub read-only reconnaissance and diff review.
+3. Add local Git and CI adapters.
+4. Add an authenticated event bridge for coding-agent sessions.
+5. Add bounded operator actions and audit records.
+6. Integrate the established Scout/Spark Scout/Oracle governance format after its canonical implementation is identified.
